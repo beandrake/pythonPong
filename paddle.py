@@ -6,7 +6,7 @@ class Paddle(Turtle, GameObject):
 	Y_MAX = 200
 	Y_MIN = -200
 	
-	def __init__(self, xPosition, upKey, downKey):
+	def __init__(self, xPosition, upKey, downKey, pixelsPerSecond = 10):
 		super().__init__()
 
 		self.xPosition = xPosition
@@ -14,7 +14,7 @@ class Paddle(Turtle, GameObject):
 		self.downKey = downKey
 		self.upKeyPressed = False
 		self.downKeyPressed = False
-		self.movementDistance = 1
+		self.pixelsPerSecond = pixelsPerSecond
 
 		# initialize aesthetic
 		self.shape('square')
@@ -40,22 +40,22 @@ class Paddle(Turtle, GameObject):
 	def setDownKeyReleased(self):
 		self.downKeyPressed = False
 	
-	def update(self):
+	def update(self, secondsSinceLastUpdate):
 		if self.upKeyPressed != self.downKeyPressed:
 			if self.upKeyPressed:
-				self.moveUp()
+				self.moveUp(secondsSinceLastUpdate)
 			else:
-				self.moveDown()
+				self.moveDown(secondsSinceLastUpdate)
 
 
-	def moveUp(self):
+	def moveUp(self, secondsSinceLastUpdate):
 		if self.ycor() < Paddle.Y_MAX:
-			newY = self.ycor() + self.movementDistance
+			newY = self.ycor() + (self.pixelsPerSecond * secondsSinceLastUpdate)
 			self.goto(self.xcor(), newY)
 
-	def moveDown(self):
+	def moveDown(self, secondsSinceLastUpdate):
 		if self.ycor() > Paddle.Y_MIN:
-			newY = self.ycor() - self.movementDistance
+			newY = self.ycor() - (self.pixelsPerSecond * secondsSinceLastUpdate)
 			self.goto(self.xcor(), newY)
 
 	def resetLocation(self):

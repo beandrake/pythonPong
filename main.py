@@ -16,12 +16,20 @@ class Pong:
 		self.screen.tracer(0)	# turn off automatic drawing updates (we'll call them manually)
 		self.timeAtBeginningOfMostRecentGameObjectUpdate = time.time()
 
+		# Should the framerate be capped?  Early experiments show that this looks icky.
+		self.capFrameRate = False
+		self.cappedFramesPerSecond = 60
+		self.cappedSecondsPerFrame = 1 / self.cappedFramesPerSecond
+		self.timeAtBeginningOfMostRecentScreenDraw = time.time()
+
 		# initialize paddles
-		self.leftPaddle = Paddle(-350, 'a', 'z')
-		self.rightPaddle = Paddle(350, 'Up', 'Down')
+		paddleSpeed = (self.screen.canvheight*2) / 2	# should take a bit less than 2 seconds to move from top to bottom (note: canvheight is only half the height)
+		self.leftPaddle = Paddle(-350, 'a', 'z', paddleSpeed)
+		self.rightPaddle = Paddle(350, 'Up', 'Down', paddleSpeed)
 
 		# initialize ball
-		self.ball = Ball()
+		ballSpeed = paddleSpeed * 1.5	# let's make the ball faster than paddles
+		self.ball = Ball(pixelsPerSecondX = ballSpeed, pixelsPerSecondY = ballSpeed)
 		
 		self.gameObjectList = [self.leftPaddle, self.rightPaddle, self.ball]
 
@@ -37,17 +45,12 @@ class Pong:
 		numberOfFrameTimes = 100
 		mostRecentFrameTimes = Queue(maxsize=numberOfFrameTimes)
 
-		# let's try to update movement 30 times a second to normalize the experience
-		self.currentlyUpdatingGameObjects = False
-		self.millisecondsPerFrame = math.floor(1000/30)
-		#self.screen.ontimer(self.updateGameObjects, 1000)
-
 		while self.gameActive:
 			timeCapture = time.time()
 			timeSincePreviousLoopStarted = timeCapture - timeAtLoopStart
 			timeAtLoopStart = timeCapture
 		
-			# stuff to calculate frames per second
+			# stuff to calculate average frames per second over 100 frames
 			if mostRecentFrameTimes.full():
 				oldestFrameTime = mostRecentFrameTimes.get()
 				timeSinceOldestFrame = timeAtLoopStart - oldestFrameTime
@@ -58,39 +61,32 @@ class Pong:
 			mostRecentFrameTimes.put(timeAtLoopStart)
 
 			self.updateGameObjects()
-			self.screen.update()
 			
 			totalNumLoops += 1
 
 
-
 	def newGame(self):
-		#screen.tracer(0)
 		self.leftPaddle.resetLocation()
 		self.rightPaddle.resetLocation()
 		self.ball.resetLocation()
-		#screen.tracer(1)
+
 
 	def updateGameObjects(self):
-		# Don't overlap updates (may not be necessary anymore)
-		if self.currentlyUpdatingGameObjects:
-			return
-
-		# Update only X times per second
+		# We want objects to move at constant rates per unit of time regardless of framerate, 
+		# so we detect the time delta since the previous frame so that objects can update proportionally.
 		secondsSinceLastUpdate = time.time() - self.timeAtBeginningOfMostRecentGameObjectUpdate
-		if  secondsSinceLastUpdate*1000 < self.millisecondsPerFrame:
-			return
-
 		self.timeAtBeginningOfMostRecentGameObjectUpdate = time.time()
-		self.currentlyUpdatingGameObjects = True
 
 		for gameObject in self.gameObjectList:
-			gameObject.update()
+			gameObject.update(secondsSinceLastUpdate)
 
-		#if self.gameActive:
-		#	self.screen.ontimer(self.updateGameObjects, self.millisecondsPerFrame)
-			
-		self.currentlyUpdatingGameObjects = False
+		if not self.capFrameRate:
+			self.screen.update()
+		else:
+			secondsSinceLastScreenDraw = time.time() - self.timeAtBeginningOfMostRecentScreenDraw
+			if secondsSinceLastScreenDraw >= self.cappedSecondsPerFrame:
+				self.timeAtBeginningOfMostRecentScreenDraw = time.time()
+				self.screen.update()
 
 
 	def quitProgram(self ):		
