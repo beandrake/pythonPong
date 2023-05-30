@@ -1,12 +1,13 @@
+from game import Game
 from turtle import Screen
-import math
 from queue import Queue
 from paddle import Paddle
 from ball import Ball
 import time
 
-class Pong:
+class Pong(Game):
 	def __init__(self):
+		super().__init__()
 		self.gameActive = True
 		# Screen
 		self.screen = Screen()
@@ -24,14 +25,12 @@ class Pong:
 
 		# initialize paddles
 		paddleSpeed = (self.screen.canvheight*2) / 2	# should take a bit less than 2 seconds to move from top to bottom (note: canvheight is only half the height)
-		self.leftPaddle = Paddle(-350, 'a', 'z', paddleSpeed)
-		self.rightPaddle = Paddle(350, 'Up', 'Down', paddleSpeed)
+		self.leftPaddle = Paddle(-350, 'a', 'z', paddleSpeed, mainGameObject=self)
+		self.rightPaddle = Paddle(350, 'Up', 'Down', paddleSpeed, mainGameObject=self)
 
 		# initialize ball
 		ballSpeed = paddleSpeed * 1.5	# let's make the ball faster than paddles
-		self.ball = Ball(pixelsPerSecondX = ballSpeed, pixelsPerSecondY = ballSpeed)
-		
-		self.gameObjectList = [self.leftPaddle, self.rightPaddle, self.ball]
+		self.ball = Ball(pixelsPerSecondX = ballSpeed, pixelsPerSecondY = ballSpeed, mainGameObject=self)
 
 		# After game pieces are initialized
 		self.screen.onkeypress(self.quitProgram, 'q')
@@ -45,12 +44,12 @@ class Pong:
 		numberOfFrameTimes = 100
 		mostRecentFrameTimes = Queue(maxsize=numberOfFrameTimes)
 
-		while self.gameActive:
+		while self.gameActive:			
+			# stuff to calculate average frames per second over 100 frames
 			timeCapture = time.time()
 			timeSincePreviousLoopStarted = timeCapture - timeAtLoopStart
 			timeAtLoopStart = timeCapture
-		
-			# stuff to calculate average frames per second over 100 frames
+
 			if mostRecentFrameTimes.full():
 				oldestFrameTime = mostRecentFrameTimes.get()
 				timeSinceOldestFrame = timeAtLoopStart - oldestFrameTime
@@ -80,16 +79,16 @@ class Pong:
 		for gameObject in self.gameObjectList:
 			gameObject.update(secondsSinceLastUpdate)
 
-		if not self.capFrameRate:
-			self.screen.update()
-		else:
+		if self.capFrameRate:
 			secondsSinceLastScreenDraw = time.time() - self.timeAtBeginningOfMostRecentScreenDraw
 			if secondsSinceLastScreenDraw >= self.cappedSecondsPerFrame:
 				self.timeAtBeginningOfMostRecentScreenDraw = time.time()
 				self.screen.update()
+		else:
+			self.screen.update()
 
 
-	def quitProgram(self ):		
+	def quitProgram(self):		
 		self.gameActive = False
 
 

@@ -1,12 +1,12 @@
 from turtle import Turtle
-from gameObject import GameObject
+from collisionObject import CollisionObject
 
-class Paddle(Turtle, GameObject):
+class Paddle(CollisionObject):
 		
 	Y_MAX = 200
 	Y_MIN = -200
 	
-	def __init__(self, xPosition, upKey, downKey, pixelsPerSecond = 10):
+	def __init__(self, xPosition, upKey, downKey, pixelsPerSecond = 10, mainGameObject=None):
 		super().__init__()
 
 		self.xPosition = xPosition
@@ -17,10 +17,8 @@ class Paddle(Turtle, GameObject):
 		self.pixelsPerSecond = pixelsPerSecond
 
 		# initialize aesthetic
-		self.shape('square')
-		self.shapesize(stretch_wid=5, stretch_len=1)
+		self.shapesize(stretch_wid=1, stretch_len=5)
 		self.color('white')
-		self.penup()
 		self.resetLocation()
 
 		# initialize listeners
@@ -28,6 +26,10 @@ class Paddle(Turtle, GameObject):
 		self.screen.onkeyrelease(self.setUpKeyReleased, self.upKey)
 		self.screen.onkeypress(self.setDownKeyPressed, self.downKey)
 		self.screen.onkeyrelease(self.setDownKeyReleased, self.downKey)
+
+		# register self with game
+		if mainGameObject is not None:
+			mainGameObject.registerCollisionObject(self)
 
 	def setUpKeyPressed(self):
 		self.upKeyPressed = True

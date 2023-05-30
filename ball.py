@@ -1,9 +1,9 @@
 from turtle import Turtle
-from gameObject import GameObject
+from collisionObject import CollisionObject
 
-class Ball(Turtle, GameObject):
+class Ball(CollisionObject):
 	
-	def __init__(self, positionX=0, positionY=0, pixelsPerSecondX=15, pixelsPerSecondY=15):
+	def __init__(self, positionX=0, positionY=0, pixelsPerSecondX=15, pixelsPerSecondY=15, mainGameObject=None):
 		super().__init__()
 		self.positionX = positionX
 		self.positionY = positionY
@@ -17,8 +17,15 @@ class Ball(Turtle, GameObject):
 		self.penup()
 		self.resetLocation()
 
+		# register self with game
+		if mainGameObject is not None:
+			mainGameObject.registerCollisionObject(self)
+			self.collisionObjectList = mainGameObject.collisionObjectList
+
 	def update(self, secondsSinceLastUpdate):
 		self.move(secondsSinceLastUpdate)
+		self.checkCollisionWithCollisionObjects()
+		self.checkCollisionWithScreenEdges()
 
 
 	def move(self, secondsSinceLastUpdate):
@@ -26,14 +33,27 @@ class Ball(Turtle, GameObject):
 		newY = self.ycor() + (self.pixelsPerSecondY * secondsSinceLastUpdate)
 		self.goto(newX, newY)
 
-		if self.pixelsPerSecondX > 0 and newX > self.screen.canvwidth		\
-		   or 																\
-		   self.pixelsPerSecondX < 0 and newX < -self.screen.canvwidth:
+
+	def checkCollisionWithCollisionObjects(self):
+		for collisionObject in self.collisionObjectList:
+			if collisionObject is not self and self.isCollidingWith(collisionObject):
+				# Only bounce off something if you are moving in the direction of its center
+				if (self.pixelsPerSecondX > 0 and self.xcor() < collisionObject.xcor())	\
+				   or																	\
+				   (self.pixelsPerSecondX < 0 and self.xcor() > collisionObject.xcor()):
+					self.pixelsPerSecondX = -self.pixelsPerSecondX
+
+
+	def checkCollisionWithScreenEdges(self):
+		if (self.pixelsPerSecondX > 0 and self.xcor() > self.screen.canvwidth)		\
+		   or 																		\
+		   (self.pixelsPerSecondX < 0 and self.xcor() < -self.screen.canvwidth):
 			self.pixelsPerSecondX = -self.pixelsPerSecondX
+			# you could also put point logic here to keep score
 		
-		if self.pixelsPerSecondY > 0 and newY > self.screen.canvheight		\
-		   or 																\
-		   self.pixelsPerSecondY < 0 and newY < -self.screen.canvheight:
+		if (self.pixelsPerSecondY > 0 and self.ycor() > self.screen.canvheight)		\
+		   or 																		\
+		   (self.pixelsPerSecondY < 0 and self.ycor() < -self.screen.canvheight):
 			self.pixelsPerSecondY = -self.pixelsPerSecondY
 
 
