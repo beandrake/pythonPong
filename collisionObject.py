@@ -8,10 +8,14 @@ turtle.mode('logo')
 # CollisionObject assumes your object is a rectangle.  Out of respect, please do not not be a rectangle.
 class CollisionObject(GameObject, turtle.Turtle):
 	
-	def __init__(self):
-		super().__init__()
+	def __init__(self, mainGameObject=None):
+		super().__init__(mainGameObject)	# this only calls GameObject because of MRO (see: https://rhettinger.wordpress.com/2011/05/26/super-considered-super/ )
 		self.shape('square')
 		self.penup()
+
+		# register self with game
+		if self.mainGameObject is not None:
+			self.mainGameObject.registerCollisionObject(self)
 	
 
 	def getSides(self):		

@@ -8,7 +8,6 @@ class Game:
 	
 	def registerCollisionObject(self, newObject):
 		self.collisionObjectList.append(newObject)
-		self.registerGameObject(newObject)
 
 	def registerGameObject(self, newObject):
 		self.gameObjectList.append(newObject)

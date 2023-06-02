@@ -7,7 +7,7 @@ class Paddle(CollisionObject):
 	Y_MIN = -200
 	
 	def __init__(self, xPosition, upKey, downKey, pixelsPerSecond = 10, mainGameObject=None):
-		super().__init__()
+		super().__init__(mainGameObject)
 
 		self.xPosition = xPosition
 		self.upKey = upKey
@@ -27,9 +27,6 @@ class Paddle(CollisionObject):
 		self.screen.onkeypress(self.setDownKeyPressed, self.downKey)
 		self.screen.onkeyrelease(self.setDownKeyReleased, self.downKey)
 
-		# register self with game
-		if mainGameObject is not None:
-			mainGameObject.registerCollisionObject(self)
 
 	def setUpKeyPressed(self):
 		self.upKeyPressed = True

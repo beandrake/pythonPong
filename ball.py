@@ -4,11 +4,12 @@ from collisionObject import CollisionObject
 class Ball(CollisionObject):
 	
 	def __init__(self, positionX=0, positionY=0, pixelsPerSecondX=15, pixelsPerSecondY=15, mainGameObject=None):
-		super().__init__()
+		super().__init__(mainGameObject)
 		self.positionX = positionX
 		self.positionY = positionY
 		self.pixelsPerSecondX = pixelsPerSecondX
 		self.pixelsPerSecondY = pixelsPerSecondY
+		self.collisionObjectList = mainGameObject.collisionObjectList
 
 		# initialize aesthetic
 		self.shape('square')
@@ -17,10 +18,6 @@ class Ball(CollisionObject):
 		self.penup()
 		self.resetLocation()
 
-		# register self with game
-		if mainGameObject is not None:
-			mainGameObject.registerCollisionObject(self)
-			self.collisionObjectList = mainGameObject.collisionObjectList
 
 	def update(self, secondsSinceLastUpdate):
 		self.move(secondsSinceLastUpdate)
